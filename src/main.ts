@@ -10,16 +10,16 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule,FormsModule],
   template: `
-    <div class="editor-container">
-      <div class="toolbar">
-        <button (click)="shareCode()" [disabled]="loading">Share Code</button>
-        <button (click)="copyLink()" *ngIf="shareId">Copy Link</button>
-        <span *ngIf="loading">Saving...</span>
-        <span *ngIf="error" style="color: #ff4444;">{{error}}</span>
-      </div>
-      <div #editorContainer class="editor"></div>
+  <div class="editor-container">
+    <div class="toolbar">
+      <button (click)="shareCode()" [disabled]="loading">Share Code</button>
+      <button (click)="copyLink()" *ngIf="shareId">Copy Link</button>
+      <span *ngIf="loading">Saving...</span>
+      <span *ngIf="error" class="error-text">{{error}}</span>
     </div>
-  `,
+    <div #editorContainer class="editor"></div>
+  </div>
+`,
 })
 export class App implements OnInit {
   @ViewChild('editorContainer', { static: true }) editorContainer!: ElementRef;
@@ -45,13 +45,27 @@ snippetText: any;
       this.editor = monaco.editor.create(this.editorContainer.nativeElement, {
         value: '// Start coding here...',
         language: 'javascript',
-        theme: 'vs-dark',
-        automaticLayout: true,
+        theme: 'vs-light',
+        automaticLayout: true, // This should make it resize automatically
       });
+  
+      // Add event listener for window resize
+      window.addEventListener('resize', this.onResize.bind(this));
     } catch (error) {
       console.error('Error initializing editor:', error);
       this.error = 'Failed to initialize editor';
     }
+  }
+  
+  onResize() {
+    if (this.editor) {
+      this.editor.layout();
+    }
+  }
+  
+  ngOnDestroy() {
+    // Clean up the resize event listener when the component is destroyed
+    window.removeEventListener('resize', this.onResize.bind(this));
   }
 
   async shareCode() {
